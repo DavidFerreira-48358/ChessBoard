@@ -23,18 +23,17 @@ enum class Commands {
 sealed class Result
 
 /**
+ * Result produced when the command execution determines that the application should terminate.
+ * See https://kotlinlang.org/docs/object-declarations.html#object-declarations-overview
+ */
+object Exit : Result()
+
+/**
  * Result produced when the command execution yields a value
  */
 class CommandResult<T>(val data: T) : Result()
 
 class MongoDbBoard(private val db: DbOperations): Board{
-
-    /**
-     * Function that initializes the Board
-     */
-    init {
-        placePieces()
-    }
 
     /**
      * Val that creates the matrix used in the Board
@@ -100,6 +99,14 @@ class MongoDbBoard(private val db: DbOperations): Board{
     override var actionState = Commands.INVALID
 
     var list:List<PairMove> = LinkedList<PairMove>()
+
+    /**
+     * Function that initializes the Board
+     */
+    init {
+        placePieces()
+    }
+
     /**
      * Function that places the pieces on the board
      */

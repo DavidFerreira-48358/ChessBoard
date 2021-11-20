@@ -16,54 +16,6 @@ data class PairMove(val team:String,val move: String){
  */
 typealias View = (input: Any?) -> Unit
 
-/*interface Views {
-
-    /**
-     * Function that opens a new game
-     * @param input, the input that says if the action was successful
-     */
-    fun open(input: Any?)
-
-    /**
-     * Function joins a game
-     * @param input, the input that says if the action was successful
-     */
-    fun join(input: Any?)
-
-    /**
-     * Function sees if the DataBase as been updated with the opponents move
-     * @param input, the input that says if the action was successful
-     */
-    fun refresh(input: Any?)
-
-    /**
-     * Function plays a move in the board if it is valid
-     * @param input, the input that says if the action was successful
-     */
-    fun play(input: Any?)
-
-    /**
-     * Function prints the moves done until now
-     * @param list, the list of moves
-     */
-    fun printMoves(list: List<PairMove>)
-
-    /**
-     * Function that prints the help command
-     */
-    fun help()
-
-    /**
-     * Function that print the board at play
-     */
-    fun drawBoard(board: Board)
-
-    /**
-     * Function that print the introduction to the game when it starts
-     */
-    fun welcome()
-}*/
-
 fun printOpen(input: Any?) {
     input as Commands
     val success = (input != Commands.INVALID)

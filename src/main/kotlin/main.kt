@@ -19,7 +19,7 @@ fun main() {
             if (handler == null) println("Invalid command")
             else {
                 when (val result = handler.action(parameter)) { //vai fazer a action
-                    is ExitCommand -> break //sai
+                    is Exit -> break //sai
                     is CommandResult<*> -> handler.display(result.data) //faz display do resultado
                 }
             }

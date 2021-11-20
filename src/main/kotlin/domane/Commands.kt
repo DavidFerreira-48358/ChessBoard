@@ -2,6 +2,7 @@ package domane
 
 import storage.Board
 import storage.Commands
+import storage.Exit
 
 interface CommandInterface{
     /**
@@ -20,16 +21,16 @@ class OpenCommand(
     private val board: Board
 ):CommandInterface{
     override fun execute(parameter: String?): Commands {
-        requireNotNull(parameter)
-        return board.open(parameter)
+        return if(parameter == null) return Commands.INVALID
+        else board.open(parameter)
     }
 }
 class JoinCommand(
     private val board: Board
 ):CommandInterface{
     override fun execute(parameter: String?): Commands {
-        requireNotNull(parameter)
-        return board.join(parameter)
+        return if(parameter == null) return Commands.INVALID
+        else board.join(parameter)
     }
 }
 class PlayCommand(
@@ -57,7 +58,7 @@ class RefreshCommand(
 }
 
 class ExitCommand:CommandInterface{
-    override fun execute(parameter: String?): Commands = Commands.EXIT
+    override fun execute(parameter: String?): Exit = Exit
 }
 
 class HelpCommand:CommandInterface{
