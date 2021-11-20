@@ -123,6 +123,15 @@ class MongoDbBoard(private val db: DbOperations): Board{
     }
 
     /**
+     * Function that adds move to the global list of moves
+     * @param move, the move to be added
+     */
+    private fun addToGameString(move:Move){
+        currentGame_String += "$move "
+        db.put(currentgame_state,GameState(currentGameid,currentGame_String))
+    }
+
+    /**
      * Override of the function toString
      * @return The current state of the Board in a String format
      */
@@ -150,12 +159,14 @@ class MongoDbBoard(private val db: DbOperations): Board{
 
         if(this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'K' ||
             this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'k'){
+            addToGameString(move)
             actionState = Commands.WIN
             return this
         }
         this.arrayOfArrays[move.from.x][move.from.y] = null
         this.arrayOfArrays[move.to.x][move.to.y] = toMove
         if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) actionState = Commands.PROMOTE//mudar
+        addToGameString(move)
         return this
     }
 

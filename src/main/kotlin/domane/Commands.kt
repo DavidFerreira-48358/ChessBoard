@@ -28,7 +28,7 @@ class JoinCommand(
 class PlayCommand(
     private val board: Board
 ):CommandInterface{
-    override fun execute(parameter: String?): Any? {
+    override fun execute(parameter: String?): Any {
         if(parameter == null){
             board.actionState = Commands.INVALID
             return CommandResult(board)

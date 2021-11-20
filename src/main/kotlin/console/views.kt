@@ -56,8 +56,10 @@ fun printRefresh(input: Any?) {
          var i = 1
          var team = Team.WHITE
          input.split(" ").forEach {
-             println("Play ${i++}: $team -> $it")
-             team = team.next()
+             if(it != " "){
+                 println("Play ${i++}: $team -> $it")
+                 team = team.next()
+             }
          }
      }
 }
