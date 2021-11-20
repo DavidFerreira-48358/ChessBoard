@@ -16,8 +16,13 @@ data class Move(val piece:Char, val from:Pos, val to:Pos)
  */
 enum class Team {
     BLACK,
-    WHITE,
+    WHITE;
+    fun next(): Team {
+        return if(this == WHITE) BLACK
+        else WHITE
+    }
 }
+
 
 /**
  * data class that defines the type Piece
@@ -25,8 +30,4 @@ enum class Team {
  * @param team the team with the piece belongs
  * @param fristmove dictates if its the piece first move
  */
-data class Piece(val piece:Char, val team:Team, var fristmove:Boolean = false){
-    fun print(){
-        println(piece)
-    }
-}
+data class Piece(val piece:Char, val team:Team, var fristmove:Boolean = false)

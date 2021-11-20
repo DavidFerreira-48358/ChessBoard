@@ -4,6 +4,7 @@ import console.PairMove
 import domane.Move
 import domane.Piece
 import domane.Team
+import domane.sanitiseString
 import java.util.*
 
 /**
@@ -16,6 +17,15 @@ enum class Commands {
     PROMOTE,
     EXIT
 }
+/**
+ * Sum type used to represent the execution result of the existing commands
+ */
+sealed class Result
+
+/**
+ * Result produced when the command execution yields a value
+ */
+class CommandResult<T>(val data: T) : Result()
 
 class MongoDbBoard(private val db: DbOperations): Board{
 
@@ -87,7 +97,7 @@ class MongoDbBoard(private val db: DbOperations): Board{
     /**
      * Hold the current game state
      */
-    var actionState = Commands.INVALID
+    override var actionState = Commands.INVALID
 
     var list:List<PairMove> = LinkedList<PairMove>()
     /**
@@ -154,7 +164,7 @@ class MongoDbBoard(private val db: DbOperations): Board{
         if(move.from == move.to) return Commands.INVALID
         if(turn != getPieceAt(move.from.x,move.from.y)!!.team) return Commands.INVALID
         if(getPieceAt(move.to.x,move.to.y)?.team == getPieceAt(move.from.x,move.from.y)!!.team) return Commands.INVALID
-        if(pieceMoves(move.piece,toMove.team,move.from,move.to,this) == Commands.INVALID) return Commands.INVALID
+        if(pieceMoves(move.piece,toMove.team,move.from,move.to,this)[move.piece]. == Commands.INVALID) return Commands.INVALID
         return Commands.VALID
     }
 
@@ -179,21 +189,27 @@ class MongoDbBoard(private val db: DbOperations): Board{
         }
         else Commands.INVALID
     }
-    override fun refresh(board:Board):Commands{
-        if (currentGameid.isEmpty())return Commands.INVALID
-        var a= db.read(currentgame_state,currentGameid)!!.movement
-        val b= a.split(" ")
-        a=b[b.size-2]
+    override fun refresh():Board{
+        if (currentGameid.isEmpty()){
+            this.actionState = Commands.INVALID
+            return this
+        }
+        val a = db.read(currentgame_state,currentGameid)!!.movement
+        val b = sanitiseString(a,this)
+        if(b == null){
+            this.actionState = Commands.INVALID
+            return this
+        }
         return if(list[list.size-1].move!=a){
-            board.makeMove(a)
-            if(actionState!=Commands.INVALID) {
+            this.makeMove(b)
+            if(actionState!=Commands.INVALID) {//ja se sabe a partida que é um move valido
                 currentGame_String += a
-                turn = if (turn == Team.WHITE) Team.BLACK else Team.WHITE
+                turn = turn.next()
             }
-            Commands.VALID
+            this
         }
         else {
-            Commands.INVALID
+            this
         }
 
     }

@@ -1,15 +1,14 @@
 package domane
 
+import storage.Board
 import storage.Commands
 
-//class CommandsException(cause: Exception): Exception(cause)
-
-interface Commands{
+interface CommandInterface{
     /**
      * Executes this command passing it the given parameter
      * @param parameter the commands parameter, or null, if no parameter has been passed
      */
-    fun execute(parameter: String?): Commands
+    fun execute(parameter: String?): Any
 
     /**
      * Overload of invoke operator, for convenience.
@@ -17,24 +16,54 @@ interface Commands{
     operator fun invoke(parameter: String? = null) = execute(parameter)
 
 }
-class OpenCommand(){
-    // TODO: 18/11/2021
+class OpenCommand(
+    private val board: Board
+):CommandInterface{
+    override fun execute(parameter: String?): Commands {
+        requireNotNull(parameter)
+        return board.open(parameter)
+    }
 }
-class JoinCommand(){
-    // TODO: 18/11/2021
+class JoinCommand(
+    private val board: Board
+):CommandInterface{
+    override fun execute(parameter: String?): Commands {
+        requireNotNull(parameter)
+        return board.join(parameter)
+    }
 }
-class PlayCommand(){
-    // TODO: 18/11/2021
+class PlayCommand(
+    private val board: Board
+):CommandInterface{
+    override fun execute(parameter: String?): Commands {
+        requireNotNull(parameter)
+        val sanitized = sanitiseString(parameter,board)?: return Commands.INVALID
+        board.makeMove(sanitized)
+        return board.actionState
+    }
 }
-class MoveCommand(){
-    // TODO: 18/11/2021
+class MoveCommand(
+    private val board: Board
+):CommandInterface{
+    override fun execute(parameter: String?): String {
+        return board.moves()
+    }
 }
-class RefreshCommand(){
-    // TODO: 18/11/2021
+
+class RefreshCommand(
+    private val board: Board
+):CommandInterface{
+    override fun execute(parameter: String?): Board = board.refresh()
 }
-class helpCommand(){
-    // TODO: 18/11/2021
+
+class ExitCommand:CommandInterface{
+    override fun execute(parameter: String?): Commands = Commands.EXIT
 }
+
+class HelpCommand:CommandInterface{
+    override fun execute(parameter: String?): Commands = Commands.VALID
+}
+
 
 /*/**
      * Function that opens a new game

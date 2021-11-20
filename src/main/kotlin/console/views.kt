@@ -1,6 +1,8 @@
 package console
 
+import domane.Team
 import storage.Board
+import storage.Commands
 
 
 data class PairMove(val team:String,val move: String){
@@ -63,7 +65,8 @@ typealias View = (input: Any?) -> Unit
 }*/
 
 fun printOpen(input: Any?) {
-    val success = input as Boolean
+    input as Commands
+    val success = (input != Commands.INVALID)
     println(
         if (success) "Opened a game"
         else "Couldn't open a game"
@@ -71,40 +74,43 @@ fun printOpen(input: Any?) {
 }
 
 fun printJoin(input: Any?) {
-    val success = input as Boolean
+    input as Commands
+    val success = (input != Commands.INVALID)
     println(
         if (success) "Joined game"
-        else "Couldn't join a game"
+        else "Couldn't join the game"
     )
 }
 
 fun printPlay(input: Any?) {
-    val success = input as Boolean
+    input as Board
     println(
-        if (success) "Move successful"
+        if (input.actionState != Commands.INVALID) drawBoard(input)
         else "Invalid move"
     )
 }
-
+//se for succes ent é para fazer draw
 fun printRefresh(input: Any?) {
     val success = input as Boolean
     println(
-        if (success) "Updated"
+        if (success) drawBoard(input)
         else "No updates yeet"
     )
 }
-
+//faz print da string
  fun printMoves(input: Any?) {
-     if(input as List<PairMove> != null){
+     if(input as String != null){
          println("Moves:")
          var i = 1
-         input.forEach {
-             println("Play ${i++}: ${it.team} -> ${it.move}")
+         var team = Team.WHITE
+         input.split(" ").forEach {
+             println("Play ${i++}: $team -> $it")
+             team = team.next()
          }
      }
 }
 
-fun printHelp() {
+fun printHelp(input: Any?) {
     println("Commands list:\n" +
             "open <game number> -> this command allows you start a new game\n" +
             "join <game number> -> this command allows you to join an ongoing game\n" +
@@ -113,10 +119,11 @@ fun printHelp() {
             "refresh -> allows to refresh search in the DB for the opponent's move\n" +
             "moves -> this command allows you to see the list of moves done until now\n" +
             "exit -> allows you to exit the game\n" +
-            "? -> allows you to get commands information")
+            "? -> allows you to get commands information"
+    )
 }
 
-fun drawBoard(input: Any??) {
+fun drawBoard(input: Any?) {
     if(input as Board != null) {
         println("    a b c d e f g h")
         println("   -----------------")
@@ -138,6 +145,10 @@ fun drawBoard(input: Any??) {
     }
 }
 
- fun welcome() {
+fun welcome() {
+    TODO("Not yet implemented")
+}
+
+fun printWin(){
     TODO("Not yet implemented")
 }

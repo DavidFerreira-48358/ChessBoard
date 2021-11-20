@@ -1,5 +1,5 @@
 import console.*
-import domane.Commands
+import domane.*
 import storage.Board
 import storage.DbOperations
 
@@ -7,7 +7,7 @@ import storage.DbOperations
  * todo
  */
 data class CommandHandler(
-    val action: Commands,
+    val action: CommandInterface,
     val display: View
 )
 //REVER COMENTARIO
@@ -17,14 +17,14 @@ data class CommandHandler(
  * @param author    the [Author] instance to be used when posting messages
  * @return the container with the command handler mappings
  */
-fun CommandHandlers(board: Board, db: DbOperations, s:String): Map<String, CommandHandler> {
+fun Handlers(board: Board): Map<String, CommandHandler> {
     return mapOf(
-        "OPEN"  to CommandHandler(OpenCommand(db,s), ::printOpen),
-        "JOIN"   to CommandHandler(JoinCommand(db,s), ::printJoin),
-        "PLAY"   to CommandHandler(PlayCommand(board,s), ::drawBoard),
-        "REFRESH"   to CommandHandler(RefreshCommand(board,s), ::printRefresh),
-        "MOVES"   to CommandHandler(GetCommand(board), ::printMoves),
+        "OPEN"  to CommandHandler(OpenCommand(board), ::printOpen),
+        "JOIN"   to CommandHandler(JoinCommand(board), ::printJoin),
+        "PLAY"   to CommandHandler(PlayCommand(board), ::printPlay),
+        "REFRESH"   to CommandHandler(RefreshCommand(board), ::printRefresh),
+        "MOVES"   to CommandHandler(MoveCommand(board), ::printMoves),
         "EXIT"  to CommandHandler(ExitCommand(), { }),
-        "?"   to CommandHandler({}, ::printHelp)
+        "?"   to CommandHandler(HelpCommand(), ::printHelp)
     )
 }

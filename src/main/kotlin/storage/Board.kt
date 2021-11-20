@@ -4,6 +4,7 @@ import domane.Move
 import domane.Piece
 
 class BoardAccessException(cause: Exception): Exception(cause)
+class BoardErrorException(cause: Exception): Exception(cause)
 
 interface Board {
 
@@ -26,7 +27,9 @@ interface Board {
 
     fun join(id:String):Commands
 
-    fun refresh(board:Board):Commands
+    fun refresh():Board
 
     fun moves():String
+
+    val actionState:Commands
 }

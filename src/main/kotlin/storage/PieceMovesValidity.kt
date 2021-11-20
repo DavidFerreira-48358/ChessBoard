@@ -3,6 +3,7 @@ package storage
 import domane.Pos
 import domane.Team
 
+typealias Command = () -> Commands
 /**
  * Function that selects movements functions based on the piece given
  * @param c the piece
@@ -12,24 +13,24 @@ import domane.Team
  * @param board the board at play
  * @return [Result] with dictate if the move is valid or not
  */
-fun pieceMoves(c:Char, team: Team, from: Pos, to:Pos, board:Board): Commands {
+fun pieceMoves(c:Char, team: Team, from: Pos, to:Pos, board:Board): Map<Char, Command> {
 
-    return when(c){
-        'P'-> movePawnTo(team, from, to, board)
+/*return when(c){
+    'P'-> movePawnTo(team, from, to, board)
 
-        'B'-> moveBishopTo(from, to, board)
+    'B'-> moveBishopTo(from, to, board)
 
-        'Q' ->  moveQueenTo(from, to, board)
+    'Q' ->  moveQueenTo(from, to, board)
 
-        'K' ->  moveKingTo(from,to)
+    'K' ->  moveKingTo(from,to)
 
-        'R' -> moveTowerTo(from, to, board)
+    'R' -> moveTowerTo(from, to, board)
 
-        'N' -> moveHorseTo(from, to)
+    'N' -> moveHorseTo(from, to)
 
-        else-> Commands.INVALID
-    }
-    /*return mapOf<Char,Commands>(
+    else-> Commands.INVALID
+}*/
+    return mapOf<Char,Command>(
         'P' to {movePawnTo(team, from, to, board)},
 
         'B' to {moveBishopTo(from, to, board)},
@@ -41,7 +42,7 @@ fun pieceMoves(c:Char, team: Team, from: Pos, to:Pos, board:Board): Commands {
         'R' to {moveTowerTo(from, to, board)},
 
         'N' to {moveHorseTo(from, to)}
-    )*/
+    )
 }
 
 /**
