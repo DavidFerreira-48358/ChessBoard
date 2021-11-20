@@ -13,7 +13,7 @@ typealias Command = () -> Commands
  * @param board the board at play
  * @return [Result] with dictate if the move is valid or not
  */
-fun pieceMoves(c:Char, team: Team, from: Pos, to:Pos, board:Board): Map<Char, Command> {
+fun pieceMoves(c:Char, team: Team, from: Pos, to:Pos, board:Board): Map<Char, Commands> {
 
 /*return when(c){
     'P'-> movePawnTo(team, from, to, board)
@@ -30,18 +30,18 @@ fun pieceMoves(c:Char, team: Team, from: Pos, to:Pos, board:Board): Map<Char, Co
 
     else-> Commands.INVALID
 }*/
-    return mapOf<Char,Command>(
-        'P' to {movePawnTo(team, from, to, board)},
+    return mapOf<Char,Commands>(
+        'P' to (::movePawnTo)(team, from, to, board),//ver o q isto faz
 
-        'B' to {moveBishopTo(from, to, board)},
+        'B' to moveBishopTo(from, to, board),
 
-        'Q' to {moveQueenTo(from, to, board)},
+        'Q' to moveQueenTo(from, to, board),
 
-        'K' to {moveKingTo(from,to)},
+        'K' to moveKingTo(from,to),
 
-        'R' to {moveTowerTo(from, to, board)},
+        'R' to moveTowerTo(from, to, board),
 
-        'N' to {moveHorseTo(from, to)}
+        'N' to moveHorseTo(from, to)
     )
 }
 

@@ -164,7 +164,7 @@ class MongoDbBoard(private val db: DbOperations): Board{
         if(move.from == move.to) return Commands.INVALID
         if(turn != getPieceAt(move.from.x,move.from.y)!!.team) return Commands.INVALID
         if(getPieceAt(move.to.x,move.to.y)?.team == getPieceAt(move.from.x,move.from.y)!!.team) return Commands.INVALID
-        if(pieceMoves(move.piece,toMove.team,move.from,move.to,this)[move.piece]. == Commands.INVALID) return Commands.INVALID
+        if(pieceMoves(move.piece,toMove.team,move.from,move.to,this)[move.piece] == Commands.INVALID) return Commands.INVALID
         return Commands.VALID
     }
 
