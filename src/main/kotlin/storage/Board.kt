@@ -23,13 +23,13 @@ interface Board {
      */
     fun getPieceAt(x:Int,y:Int): Piece?
 
-    fun open(id:String):Commands
+    fun open(id:String?):Commands
 
-    fun join(id:String):Commands
+    fun join(id:String?):Commands
 
     fun refresh():Board
 
     fun moves():String
 
-    val actionState:Commands
+    var actionState:Commands
 }

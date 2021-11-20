@@ -19,14 +19,14 @@ fun main() {
             if (handler == null) println("Invalid command")
             else {
                 when (val result = handler.action(parameter)) { //vai fazer a action
-                    is Exit -> break //sai
+                    is ExitResult -> break //sai
                     is CommandResult<*> -> handler.display(result.data) //faz display do resultado
                 }
             }
         }
     }
     catch(e:BoardAccessException){//erros da database
-        println("Error accessing DataBase services." +
+        println("Error with DataBase services." +
                 if (dbInfo.mode == DbMode.REMOTE) "Check your network connection."
                 else "Is your local database started?")
     }

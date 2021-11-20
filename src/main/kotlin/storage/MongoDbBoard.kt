@@ -14,8 +14,7 @@ enum class Commands {
     VALID,
     INVALID,
     WIN,
-    PROMOTE,
-    EXIT
+    PROMOTE
 }
 /**
  * Sum type used to represent the execution result of the existing commands
@@ -26,7 +25,7 @@ sealed class Result
  * Result produced when the command execution determines that the application should terminate.
  * See https://kotlinlang.org/docs/object-declarations.html#object-declarations-overview
  */
-object Exit : Result()
+object ExitResult : Result()
 
 /**
  * Result produced when the command execution yields a value
@@ -98,7 +97,6 @@ class MongoDbBoard(private val db: DbOperations): Board{
      */
     override var actionState = Commands.INVALID
 
-    var list:List<PairMove> = LinkedList<PairMove>()
 
     /**
      * Function that initializes the Board
@@ -177,8 +175,8 @@ class MongoDbBoard(private val db: DbOperations): Board{
 
     override fun getPieceAt(x: Int, y: Int): Piece? = this.arrayOfArrays[x][y]
 
-     override fun open(id:String):Commands{
-        return if(db.read("open",id)!=null) return Commands.INVALID
+     override fun open(id:String?):Commands{
+        return if(id == null || db.read("open",id)!=null) return Commands.INVALID
         else {
             db.post("open", GameState(id,""))
             currentGameid = id
@@ -187,11 +185,11 @@ class MongoDbBoard(private val db: DbOperations): Board{
             Commands.VALID
         }
     }
-    override fun join(id:String):Commands{
-        return if(db.read("open",id)!=null) {
+    override fun join(id:String?):Commands{
+        return if(id != null && db.read("open",id)!=null) {
             currentGameid = id
             myTeam=Team.BLACK
-            currentgame_state = "open"
+            currentgame_state = "currentgames"
             Commands.VALID
         }
         else Commands.INVALID
@@ -202,15 +200,16 @@ class MongoDbBoard(private val db: DbOperations): Board{
             return this
         }
         val a = db.read(currentgame_state,currentGameid)!!.movement
-        val b = sanitiseString(a,this)
+        val string = currentGame_String.split(" ")
+        val b = sanitiseString(string[string.size-2],this)
         if(b == null){
             this.actionState = Commands.INVALID
             return this
         }
-        return if(list[list.size-1].move!=a){
+        return if(string[string.size-2] != a ){
             this.makeMove(b)
             if(actionState!=Commands.INVALID) {//ja se sabe a partida que é um move valido
-                currentGame_String += a
+                currentGame_String += "$a "
                 turn = turn.next()
             }
             this
