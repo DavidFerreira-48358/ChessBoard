@@ -26,13 +26,18 @@ class JoinCommand(
     override fun execute(parameter: String?) = CommandResult(board.join(parameter))
 }
 class PlayCommand(
-    private val board: Board
+    private val board: Board,
+    private val dbMode: DbMode
 ):CommandInterface{
     override fun execute(parameter: String?): Any {
         if(parameter == null){
             board.actionState = Commands.INVALID
             return CommandResult(board)
         }
+      if(dbMode== DbMode.REMOTE && board.myTeam!= board.turn ){
+          board.actionState = Commands.INVALID
+          return CommandResult(board)
+      }
         val sanitized = sanitiseString(parameter,board)
         return if(sanitized == null){
             board.actionState = Commands.INVALID
