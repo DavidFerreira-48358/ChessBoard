@@ -43,7 +43,7 @@ class PlayCommand(
             board.actionState = Commands.INVALID
             return CommandResult(board)
         }
-        else CommandResult(board.makeMove(sanitized))
+        else CommandResult(board.makeMove(sanitized,callFunc.PLAY))
     }
 }
 class MoveCommand(
