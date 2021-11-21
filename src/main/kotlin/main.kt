@@ -1,19 +1,23 @@
+import com.mongodb.client.MongoClient
 import console.readCommand
 import domane.CommandResult
 import domane.ExitResult
 import mongoDB.createMongoClient
 import storage.*
 
+fun selectPath(dbInfo:DBConnectionInfo):Pair<DbMode,MongoClient>{
+    return if (dbInfo.mode == DbMode.REMOTE) Pair(DbMode.REMOTE,createMongoClient(dbInfo.connectionString))
+    else Pair(DbMode.LOCAL,createMongoClient())
+}
 fun main() {
     val dbInfo = getDBConnectionInfo()
-    val driver =
-        if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
-        else createMongoClient()
-    val dbOperations = DbOperations(driver.getDatabase(dbInfo.dbName))
+    val driver = selectPath(dbInfo)
+
+    val dbOperations = DbOperations(driver.second.getDatabase(dbInfo.dbName))
     //cria a instacia das oepraçoes q vamos usar
     try {
-        val board = MongoDbBoard(dbOperations)//a board
-        val dispatcher = Handlers(board)//constroi os commandos com a board
+        val board = MongoDbBoard(dbOperations,driver.first)//a board
+        val dispatcher = Handlers(board,driver.first)//constroi os commandos com a board
         while(true){
             val (command, parameter) = readCommand() //le o comando
             val handler = dispatcher[command]   //vai ver o commando
@@ -36,6 +40,6 @@ fun main() {
     }
     finally {
         println("Closing driver ...")
-        driver.close()
+        driver.second.close()
     }
 }

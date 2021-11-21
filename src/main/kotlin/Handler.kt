@@ -1,6 +1,7 @@
 import console.*
 import domane.*
 import storage.Board
+import storage.DbMode
 import storage.DbOperations
 
 /**
@@ -17,11 +18,11 @@ data class CommandHandler(
  * @param author    the [Author] instance to be used when posting messages
  * @return the container with the command handler mappings
  */
-fun Handlers(board: Board): Map<String, CommandHandler> {
+fun Handlers(board: Board,db:DbMode): Map<String, CommandHandler> {
     return mapOf(
         "OPEN"  to CommandHandler(OpenCommand(board), ::printOpen),
         "JOIN"   to CommandHandler(JoinCommand(board), ::printJoin),
-        "PLAY"   to CommandHandler(PlayCommand(board), ::printPlay),
+        "PLAY"   to CommandHandler(PlayCommand(board,db), ::printPlay),
         "REFRESH"   to CommandHandler(RefreshCommand(board), ::printRefresh),
         "MOVES"   to CommandHandler(MoveCommand(board), ::printMoves),
         "EXIT"  to CommandHandler(ExitCommand(), { }),

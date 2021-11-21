@@ -3,6 +3,7 @@ package storage
 import domane.Commands
 import domane.Move
 import domane.Piece
+import domane.Team
 
 class BoardAccessException(cause: Exception): Exception(cause)
 class BoardErrorException(cause: Exception): Exception(cause)
@@ -33,4 +34,6 @@ interface Board {
     fun moves():String
 
     var actionState:Commands
+    var myTeam: Team;
+    var turn:Team ;
 }

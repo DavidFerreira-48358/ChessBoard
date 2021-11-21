@@ -1,10 +1,38 @@
 package storage
 
+import console.PairMove
+
 import domane.*
-import domane.Result.*
 import java.util.*
 
-class MongoDbBoard(private val db: DbOperations): Board{
+/**
+ * TODO(muudar para ficheiro res)
+ */
+
+
+enum class Commands {
+    VALID,
+    INVALID,
+    WIN,
+    PROMOTE
+}
+/**
+ * Sum type used to represent the execution result of the existing commands
+ */
+sealed class Result
+
+/**
+ * Result produced when the command execution determines that the application should terminate.
+ * See https://kotlinlang.org/docs/object-declarations.html#object-declarations-overview
+ */
+object ExitResult : Result()
+
+/**
+ * Result produced when the command execution yields a value
+ */
+class CommandResult<T>(val data: T) : Result()
+
+class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Board{
 
     /**
      * Val that creates the matrix used in the Board
@@ -37,7 +65,7 @@ class MongoDbBoard(private val db: DbOperations): Board{
     /**
      * holds the current player turn
      */
-    var turn:Team = Team.WHITE
+    override var turn:Team = Team.WHITE
     /**
      * holds the current game id
      */
@@ -51,7 +79,7 @@ class MongoDbBoard(private val db: DbOperations): Board{
     /**
      * Team associated to opening or joining game
      */
-    lateinit var myTeam:Team;
+    override lateinit var myTeam:Team;
 
     /**
      * indicates the first move of the game
@@ -85,11 +113,11 @@ class MongoDbBoard(private val db: DbOperations): Board{
             val curr = arrayOfArrays[i]
             for(j in blackStartInterval){
                 if(j == 0) curr[j] = Piece(pieceChar[i],Team.BLACK)
-                else curr[j] = Piece('p', Team.BLACK, SpecialMoves.FIRST)
+                else curr[j] = Piece('p', Team.BLACK, true)
             }
             for(j in whiteStartInterval){
                 if(j == 7) curr[j] = Piece(pieceChar[i].toUpperCase(),Team.WHITE)
-                else curr[j] = Piece('P',Team.WHITE, SpecialMoves.FIRST)
+                else curr[j] = Piece('P',Team.WHITE, true)
             }
         }
     }
@@ -99,8 +127,12 @@ class MongoDbBoard(private val db: DbOperations): Board{
      * @param move, the move to be added
      */
     private fun addToGameString(move:Move){
-        currentGame_String += "$move "
-        db.put(currentgame_state,GameState(currentGameid,currentGame_String))
+        if(firstmove==true){
+            currentGame_String += "${move.piece}${'a'.plus(move.from.x)}${8-move.from.y}${'a'.plus(move.to.x)}${8-move.to.y} "
+            db.post(currentgame_state,GameState(currentGameid,currentGame_String))
+        }
+        else {currentGame_String += "${move.piece}${'a'.plus(move.from.x)}${8-move.from.y}${'a'.plus(move.to.x)}${8-move.to.y} "
+        db.put(currentgame_state,GameState(currentGameid,currentGame_String))}
     }
 
     /**
@@ -127,7 +159,7 @@ class MongoDbBoard(private val db: DbOperations): Board{
         actionState = ret
         if(ret == Commands.INVALID) return this
 
-        if(toMove.fristmove == SpecialMoves.FIRST && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=SpecialMoves.EN_PASSANT
+        if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
 
         if(this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'K' ||
             this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'k'){
@@ -135,6 +167,7 @@ class MongoDbBoard(private val db: DbOperations): Board{
             actionState = Commands.WIN
             return this
         }
+
         this.arrayOfArrays[move.from.x][move.from.y] = null
         this.arrayOfArrays[move.to.x][move.to.y] = toMove
         if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) actionState = Commands.PROMOTE//mudar
@@ -190,6 +223,10 @@ class MongoDbBoard(private val db: DbOperations): Board{
         }
     }
     override fun refresh():Board{
+        if (dbInfo==DbMode.LOCAL) {
+            this.actionState = Commands.INVALID
+            return this
+        }
         if (currentGameid.isEmpty()){
             this.actionState = Commands.INVALID
             return this
