@@ -36,18 +36,16 @@ fun printJoin(input: Any?) {
 
 fun printPlay(input: Any?) {
     input as Board
-    println(
-        if (input.actionState != Commands.INVALID) drawBoard(input)
-        else "Invalid move"
-    )
+    if (input.actionState != Commands.INVALID) drawBoard(input)
+    else println("Invalid move")
+
 }
 //se for succes ent é para fazer draw
 fun printRefresh(input: Any?) {
-    val success = input as Boolean
-    println(
-        if (success) drawBoard(input)
-        else "No updates yeet"
-    )
+    //val success = input as Boolean
+    if (input != null) drawBoard(input)
+    else println("No updates yeet")
+
 }
 //faz print da string
  fun printMoves(input: Any?) {

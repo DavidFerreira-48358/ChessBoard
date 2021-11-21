@@ -1,6 +1,5 @@
 package storage
 
-import console.PairMove
 
 import domane.*
 import java.util.*
@@ -9,13 +8,6 @@ import java.util.*
  * TODO(muudar para ficheiro res)
  */
 
-
-enum class Commands {
-    VALID,
-    INVALID,
-    WIN,
-    PROMOTE
-}
 /**
  * Sum type used to represent the execution result of the existing commands
  */
@@ -26,7 +18,10 @@ sealed class Result
  * See https://kotlinlang.org/docs/object-declarations.html#object-declarations-overview
  */
 object ExitResult : Result()
-
+enum class callFunc{
+    REFRESH,
+    PLAY
+}
 /**
  * Result produced when the command execution yields a value
  */
@@ -127,12 +122,15 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
      * @param move, the move to be added
      */
     private fun addToGameString(move:Move){
+        turn= turn.next()
         if(firstmove==true){
             currentGame_String += "${move.piece}${'a'.plus(move.from.x)}${8-move.from.y}${'a'.plus(move.to.x)}${8-move.to.y} "
+            firstmove=false
+            currentgame_state="currentgames"
             db.post(currentgame_state,GameState(currentGameid,currentGame_String))
         }
         else {currentGame_String += "${move.piece}${'a'.plus(move.from.x)}${8-move.from.y}${'a'.plus(move.to.x)}${8-move.to.y} "
-        db.put(currentgame_state,GameState(currentGameid,currentGame_String))}
+            db.put(currentgame_state,GameState(currentGameid,currentGame_String))}
     }
 
     /**
@@ -149,18 +147,18 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
         return string
     }
 
-    override fun makeMove(move: Move): Board {
+    override fun makeMove(move: Move,func: callFunc): Board {
         val toMove:Piece? = arrayOfArrays[move.from.x][move.from.y]
         if(toMove == null) {
             actionState = Commands.INVALID
             return this
         }
-        val ret = checkConditionValidate(move,toMove)
+        val ret = checkConditionValidate(move,toMove,func)
         actionState = ret
         if(ret == Commands.INVALID) return this
-
         if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
-
+        if(func==callFunc.PLAY && turn!=myTeam) return this
+        if(func==callFunc.REFRESH && turn==myTeam) return this
         if(this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'K' ||
             this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'k'){
             addToGameString(move)
@@ -185,11 +183,43 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
      * @param toMove the piece to move
      * @return if the [Result] is valid or not
      */
-    private fun checkConditionValidate(move: Move, toMove:Piece): Commands {
-        if(move.from == move.to) return Commands.INVALID
-        if(turn != getPieceAt(move.from.x,move.from.y)!!.team) return Commands.INVALID
-        if(getPieceAt(move.to.x,move.to.y)?.team == getPieceAt(move.from.x,move.from.y)!!.team) return Commands.INVALID
-        if(pieceMoves(move.piece,toMove.team,move.from,move.to,this)[move.piece] == Commands.INVALID) return Commands.INVALID
+    private fun checkConditionValidate(move: Move, toMove:Piece,func: callFunc): Commands {
+        if (func==callFunc.REFRESH) {
+            if (move.from == move.to) return Commands.INVALID
+            if (turn== getPieceAt(move.from.x, move.from.y)!!.team) return Commands.INVALID
+            if (getPieceAt(move.to.x, move.to.y)?.team == getPieceAt(
+                    move.from.x,
+                    move.from.y
+                )!!.team
+            ) return Commands.INVALID
+            if (pieceMoves(
+                    move.piece,
+                    toMove.team,
+                    move.from,
+                    move.to,
+                    this
+                )[move.piece] == Commands.INVALID
+            ) return Commands.INVALID
+        }
+        else{
+
+            if (move.from == move.to) return Commands.INVALID
+            if (turn != getPieceAt(move.from.x, move.from.y)!!.team) return Commands.INVALID
+            if (getPieceAt(move.to.x, move.to.y)?.team == getPieceAt(
+                    move.from.x,
+                    move.from.y
+                )!!.team
+            ) return Commands.INVALID
+            if (pieceMoves(
+                    move.piece,
+                    toMove.team,
+                    move.from,
+                    move.to,
+                    this
+                )[move.piece] == Commands.INVALID
+            ) return Commands.INVALID
+
+        }
         return Commands.VALID
     }
 
@@ -231,29 +261,23 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
             this.actionState = Commands.INVALID
             return this
         }
-        try {
-            val a = db.read(currentgame_state,currentGameid)!!.movement
-            val string = currentGame_String.split(" ")
-            val b = sanitiseString(string[string.size-2],this)
-            if(b == null){
-                this.actionState = Commands.INVALID
-                return this
-            }
-            return if(string[string.size-2] != a ){
-                this.makeMove(b)
-                if(actionState!=Commands.INVALID) {//ja se sabe a partida que é um move valido
-                    currentGame_String += "$a "
-                    turn = turn.next()
-                }
-                this
-            }
-            else {
-                this
-            }
-        }catch (e:BoardAccessException){
-            throw BoardAccessException(e)
+        val a = db.read(currentgame_state,currentGameid)!!.movement
+        val string = currentGame_String.split(" ")
+        val b = sanitiseString(string[string.size-1],this)
+        if(b == null){
+            this.actionState = Commands.INVALID
+            return this
         }
-
+        return if(string[string.size-2] != a ){
+            this.makeMove(b,callFunc.REFRESH)
+            if(actionState!=Commands.INVALID) {//ja se sabe a partida que é um move valido
+                currentGame_String += "$a "
+            }
+            this
+        }
+        else {
+            this
+        }
 
     }
 

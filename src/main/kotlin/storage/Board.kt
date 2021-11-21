@@ -15,7 +15,7 @@ interface Board {
      * @param string the move
      * @return the [Board] moved
      */
-    fun makeMove(move: Move):Board
+    fun makeMove(move: Move,func: callFunc):Board
 
     /**
      * Function that return the piece at specified coordinates
