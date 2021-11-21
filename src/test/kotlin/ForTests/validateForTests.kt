@@ -1,6 +1,7 @@
 package ForTests
 
-import Commands
+import domane.Commands
+
 
 val piecesSetString:HashSet<String> = hashSetOf("P","R","N","Q","K","B")
 val piecesSet:HashSet<Char> = hashSetOf('P','R','N','Q','K','B')

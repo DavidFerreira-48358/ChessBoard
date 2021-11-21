@@ -1,15 +1,15 @@
 package console
 
+import domane.Commands
 import domane.Team
 import storage.Board
-import storage.Commands
 
 
-data class PairMove(val team:String,val move: String){
+/*data class PairMove(val team:String,val move: String){
     override fun toString(): String {
         return "$team -> $move"
     }
-}
+}*/
 
 /**
  * A command view is merely a function that renders the command execution result.

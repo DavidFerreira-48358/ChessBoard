@@ -1,6 +1,7 @@
 package ForTests
 
-import Commands
+import domane.Commands
+import domane.SpecialMoves
 import domane.Team
 
 fun pieceMovesT(c:Char, team: Team, from: validateForTests.Pos, to: validateForTests.Pos, board: BoardForTests): Commands {
@@ -30,25 +31,33 @@ fun pieceMovesT(c:Char, team: Team, from: validateForTests.Pos, to: validateForT
 }
 
 private fun movePawnToT(team: Team, from: validateForTests.Pos, to: validateForTests.Pos, board: BoardForTests): Commands {
-    val Michael_Jackson = when(team){
-        Team.BLACK -> if(board.getPieceAt(from.x,from.y)?.fristmove == true) +2 else +1
-        Team.WHITE -> if(board.getPieceAt(from.x,from.y)?.fristmove == true) -2 else -1
+    val vector = when(team){
+        Team.BLACK -> if(board.getPieceAt(from.x,from.y)?.fristmove == SpecialMoves.FIRST) +2 else +1
+        Team.WHITE -> if(board.getPieceAt(from.x,from.y)?.fristmove == SpecialMoves.FIRST) -2 else -1
     }
     return when(true){
-        to == validateForTests.Pos(from.x, from.y + Michael_Jackson) && board.getPieceAt(to.x , to.y) == null -> Commands.VALID
+        to == validateForTests.Pos(from.x, from.y + vector) && board.getPieceAt(to.x , to.y) == null -> Commands.VALID
 
-        to == validateForTests.Pos(from.x, from.y + Michael_Jackson/2) && board.getPieceAt(to.x , to.y) == null -> Commands.VALID
+        to == validateForTests.Pos(from.x, from.y + vector/2) && board.getPieceAt(to.x , to.y) == null -> Commands.VALID
 
-        to == validateForTests.Pos(from.x + 1, from.y + Michael_Jackson) &&
-                board.getPieceAt(from.x + 1 , from.y + Michael_Jackson)?.piece !=
+        enPassant(board, from) -> Commands.EN_PASSANT
+
+        to == validateForTests.Pos(from.x + 1, from.y + vector) &&
+                board.getPieceAt(from.x + 1 , from.y + vector)?.piece !=
                 board.getPieceAt(from.x , from.y )?.piece -> Commands.VALID
 
-        to == validateForTests.Pos(from.x - 1, from.y + Michael_Jackson) &&
-                board.getPieceAt(from.x - 1 , from.y + Michael_Jackson)?.piece !=
+        to == validateForTests.Pos(from.x - 1, from.y + vector) &&
+                board.getPieceAt(from.x - 1 , from.y + vector)?.piece !=
                 board.getPieceAt(from.x , from.y )?.piece -> Commands.VALID
-
         else -> Commands.INVALID
     }
+}
+private fun enPassant(board: BoardForTests, from:validateForTests.Pos):Boolean{
+    val piece = if((from.x+1 in 0..7) && board.getPieceAt(from.x+1,from.y) != null) board.getPieceAt(from.x+1,from.y)
+    else if((from.x-1 in 0..7) && board.getPieceAt(from.x-1,from.y) != null) board.getPieceAt(from.x-1,from.y)
+    else null
+    if(piece == null) return false
+    return piece.fristmove == SpecialMoves.EN_PASSANT
 }
 
 private fun moveTowerToT(from:validateForTests.Pos, to:validateForTests.Pos, bored: BoardForTests):Commands{

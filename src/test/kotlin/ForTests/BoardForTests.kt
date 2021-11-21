@@ -1,8 +1,10 @@
 package ForTests
 
 
-import Commands
+
+import domane.Commands
 import domane.Piece
+import domane.SpecialMoves
 import domane.Team
 
 class BoardForTests{
@@ -44,6 +46,9 @@ class BoardForTests{
 
     var actionState = Commands.INVALID
 
+    private var enPassantList = linkedMapOf<Int,validateForTests.Move>()
+    private var passantListIndex = 0
+
     /**
      * Function that places the pieces on the board
      */
@@ -52,11 +57,11 @@ class BoardForTests{
             val curr = arrayOfArrays[i]
             for(j in blackStartInterval){
                 if(j == 0) curr[j] = Piece(pieceChar[i], Team.BLACK)
-                else curr[j] = Piece('p', Team.BLACK, true)
+                else curr[j] = Piece('p', Team.BLACK, SpecialMoves.FIRST)
             }
             for(j in whiteStartInterval){
                 if(j == 7) curr[j] = Piece(pieceChar[i].toUpperCase(), Team.WHITE)
-                else curr[j] = Piece('P', Team.WHITE, true)
+                else curr[j] = Piece('P', Team.WHITE, SpecialMoves.FIRST)
             }
         }
     }
@@ -101,7 +106,14 @@ class BoardForTests{
             actionState = ret
             if(ret == Commands.INVALID) return this
 
-            if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
+            clearEnPassantList()
+            //if(toMove.fristmove == SpecialMoves.EN_PASSANT && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove= SpecialMoves.NORMAL
+            if(toMove.fristmove == SpecialMoves.FIRST && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove= SpecialMoves.EN_PASSANT
+
+            if(ret == Commands.EN_PASSANT){
+                enPassant(s,toMove)
+                return this
+            }
 
             if(this.arrayOfArrays[s.to.x][s.to.y]?.piece == 'K' ||
                 this.arrayOfArrays[s.to.x][s.to.y]?.piece == 'k'){
@@ -114,10 +126,33 @@ class BoardForTests{
             this
         } else this
         }
+    private fun clearEnPassantList(){
+        if(enPassantList.isNotEmpty()){
+            enPassantList.forEach {
+                this.arrayOfArrays[it.value.to.x][it.value.to.y]!!.fristmove = SpecialMoves.NORMAL
+            }
+            enPassantList = linkedMapOf()
+        }
+    }
+    private fun enPassant(s:validateForTests.Move,toMove: Piece){
+        if(getPieceAt(s.from.x+1,s.from.y) != null){
+            this.arrayOfArrays[s.from.x+1][s.from.y] = null
+            this.arrayOfArrays[s.from.x][s.from.y] = null
+            this.arrayOfArrays[s.to.x][s.to.y] = toMove
+        }
+        else{
+            this.arrayOfArrays[s.from.x-1][s.from.y] = null
+            this.arrayOfArrays[s.from.x][s.from.y] = null
+            this.arrayOfArrays[s.to.x][s.to.y] = toMove
+        }
+        enPassantList[passantListIndex] = s
+    }
     private fun checkConditionValidate(s: validateForTests.Move, toMove: Piece): Commands {
         if(s.from == s.to) return Commands.INVALID
         if (getPieceAt(s.to.x,s.to.y)?.team == getPieceAt(s.from.x,s.from.y)!!.team) return Commands.INVALID
-        if(pieceMovesT(s.piece, toMove.team, s.from, s.to, this) == Commands.INVALID) return Commands.INVALID
+        val pieceMoves = pieceMovesT(s.piece, toMove.team, s.from, s.to, this)
+        if(pieceMoves == Commands.INVALID) return Commands.INVALID
+        if(pieceMoves == Commands.EN_PASSANT) return Commands.EN_PASSANT
         return Commands.VALID
     }
 }

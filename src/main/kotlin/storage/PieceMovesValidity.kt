@@ -2,6 +2,8 @@ package storage
 
 import domane.Pos
 import domane.Team
+import domane.Commands
+import domane.SpecialMoves
 
 typealias Command = () -> Commands
 /**
@@ -55,8 +57,8 @@ fun pieceMoves(c:Char, team: Team, from: Pos, to:Pos, board:Board): Map<Char, Co
  */
 private fun movePawnTo(team: Team, from: Pos, to: Pos, board: Board): Commands {
     val Michael_Jackson = when(team){
-        Team.BLACK -> if(board.getPieceAt(from.x,from.y)?.fristmove == true) +2 else +1
-        Team.WHITE -> if(board.getPieceAt(from.x,from.y)?.fristmove == true) -2 else -1
+        Team.BLACK -> if(board.getPieceAt(from.x,from.y)?.fristmove == SpecialMoves.FIRST) +2 else +1
+        Team.WHITE -> if(board.getPieceAt(from.x,from.y)?.fristmove == SpecialMoves.FIRST) -2 else -1
     }
     return when(true){
         to == Pos(from.x, from.y + Michael_Jackson) && board.getPieceAt(to.x , to.y) == null -> Commands.VALID

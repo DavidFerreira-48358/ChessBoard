@@ -1,5 +1,6 @@
 import console.readCommand
-import domane.ExitCommand
+import domane.CommandResult
+import domane.ExitResult
 import mongoDB.createMongoClient
 import storage.*
 

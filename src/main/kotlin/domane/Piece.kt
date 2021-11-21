@@ -31,11 +31,15 @@ enum class Team {
     }
 }
 
-
+enum class SpecialMoves {
+    FIRST,
+    EN_PASSANT,
+    NORMAL
+}
 /**
  * data class that defines the type Piece
  * @param piece the char of the piece
  * @param team the team with the piece belongs
  * @param fristmove dictates if its the piece first move
  */
-data class Piece(val piece:Char, val team:Team, var fristmove:Boolean = false)
+data class Piece(val piece:Char, val team:Team, var fristmove:SpecialMoves = SpecialMoves.NORMAL)

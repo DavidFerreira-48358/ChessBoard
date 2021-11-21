@@ -1,5 +1,6 @@
 package storage
 
+import domane.Commands
 import domane.Move
 import domane.Piece
 
@@ -23,7 +24,7 @@ interface Board {
      */
     fun getPieceAt(x:Int,y:Int): Piece?
 
-    fun open(id:String?):Commands
+    fun open(id:String?): Commands
 
     fun join(id:String?):Commands
 
