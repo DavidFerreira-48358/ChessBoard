@@ -38,7 +38,7 @@ fun getDBConnectionInfo(): DBConnectionInfo {
 
     val connectionString = System.getenv(ENV_DB_CONNECTION)
     return DBConnectionInfo(
-        if(connectionString != null) DbMode.REMOTE else DbMode.LOCAL,
+        if(connectionString != "mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false") DbMode.REMOTE else DbMode.LOCAL,
         dbName,
         connectionString
     )

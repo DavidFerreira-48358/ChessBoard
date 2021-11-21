@@ -38,6 +38,7 @@ fun main() {
         println("An unknown error occurred.\n" + "${e.cause}")
     }
     finally {
+        println("\uD83D\uDE2D \uD83D\uDE0E \uD83E\uDD2B \uD83D\uDE41 \uD83E\uDD0F \uD83D\uDC3B ")
         println("Closing driver ...")
         driver.second.close()
     }
