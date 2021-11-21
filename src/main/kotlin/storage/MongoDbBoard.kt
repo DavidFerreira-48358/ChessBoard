@@ -189,39 +189,25 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
      */
     private fun checkConditionValidate(move: Move, toMove:Piece,func: callFunc): Commands {
         if (func==callFunc.REFRESH) {
-            if (move.from == move.to) return Commands.INVALID
-            if (turn== getPieceAt(move.from.x, move.from.y)!!.team) return Commands.INVALID
-            if (getPieceAt(move.to.x, move.to.y)?.team == getPieceAt(
-                    move.from.x,
-                    move.from.y
-                )!!.team
-            ) return Commands.INVALID
-            if (pieceMoves(
-                    move.piece,
-                    toMove.team,
-                    move.from,
-                    move.to,
-                    this
-                )[move.piece] == Commands.INVALID
-            ) return Commands.INVALID
+            if (move.from == move.to)
+                return Commands.INVALID
+            if (turn== getPieceAt(move.from.x, move.from.y)!!.team)
+                return Commands.INVALID
+            if (getPieceAt(move.to.x, move.to.y)?.team == getPieceAt(move.from.x, move.from.y)!!.team)
+                return Commands.INVALID
+            if (pieceMoves(move.piece, toMove.team, move.from, move.to, this)[move.piece] == Commands.INVALID)
+                return Commands.INVALID
         }
         else{
 
-            if (move.from == move.to) return Commands.INVALID
-            if (turn != getPieceAt(move.from.x, move.from.y)!!.team) return Commands.INVALID
-            if (getPieceAt(move.to.x, move.to.y)?.team == getPieceAt(
-                    move.from.x,
-                    move.from.y
-                )!!.team
-            ) return Commands.INVALID
-            if (pieceMoves(
-                    move.piece,
-                    toMove.team,
-                    move.from,
-                    move.to,
-                    this
-                )[move.piece] == Commands.INVALID
-            ) return Commands.INVALID
+            if (move.from == move.to)
+                return Commands.INVALID
+            if (turn != getPieceAt(move.from.x, move.from.y)!!.team)
+                return Commands.INVALID
+            if (getPieceAt(move.to.x, move.to.y)?.team == getPieceAt(move.from.x, move.from.y)!!.team)
+                return Commands.INVALID
+            if (pieceMoves(move.piece, toMove.team, move.from, move.to, this)[move.piece] == Commands.INVALID)
+                return Commands.INVALID
 
         }
         return Commands.VALID
@@ -242,7 +228,7 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
     override fun join(id:String?):Commands{
         return if(id != null && db.read("open",id)!=null) {
             currentGameid = id
-            myTeam=Team.BLACK
+            myTeam=if(dbInfo==DbMode.LOCAL)Team.WHITE else Team.BLACK
             currentgame_state = "currentgames"
             Commands.VALID
         }
@@ -258,8 +244,8 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
             return this
         }
         val a = db.read(currentgame_state,currentGameid)!!.movement
-        val string = currentGame_String.split(" ")
-        val b = sanitiseString(string[string.size-1],this)
+        val string = a.split(" ")
+        val b = sanitiseString(string[string.size-2],this)
         if(b == null){
             this.actionState = Commands.INVALID
             return this
