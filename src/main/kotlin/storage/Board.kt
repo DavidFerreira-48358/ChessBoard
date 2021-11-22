@@ -33,6 +33,7 @@ interface Board {
 
     fun moves():String
 
+    fun hasJoined():Boolean
     var actionState:Commands
     var myTeam: Team;
     var turn:Team ;

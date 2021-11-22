@@ -36,16 +36,20 @@ fun printJoin(input: Any?) {
 
 fun printPlay(input: Any?) {
     input as Board
-    if (input.actionState != Commands.INVALID) drawBoard(input)
-    else println("Invalid move")
-
+    if(input.actionState != Commands.WIN){
+        if (input.actionState != Commands.INVALID) drawBoard(input)
+        else println("Invalid move")
+    }
+    else printWin(input)
 }
 //se for succes ent é para fazer draw
 fun printRefresh(input: Any?) {
-    //val success = input as Boolean
-    if (input != null) drawBoard(input)
-    else println("No updates yeet")
-
+    input as Board
+    if(input.actionState != Commands.WIN){
+        if (input.actionState != Commands.INVALID) drawBoard(input)
+        else println("No updates yet")
+    }
+    else println("${input.turn} wins the Game!")
 }
 //faz print da string
  fun printMoves(input: Any?) {
@@ -54,7 +58,7 @@ fun printRefresh(input: Any?) {
          var i = 1
          var team = Team.WHITE
          input.split(" ").forEach {
-             if(it != " "){
+             if(it.isNotEmpty()){
                  println("Play ${i++}: $team -> $it")
                  team = team.next()
              }
@@ -97,10 +101,10 @@ fun drawBoard(input: Any?) {
     }
 }
 
-fun welcome() {
-    TODO("Not yet implemented")
+fun printWelcome() {
+    printHelp("a")
 }
 
-fun printWin(){
-    TODO("Not yet implemented")
+fun printWin(input: Board){
+    println("${input.turn} wins the Game!")
 }
