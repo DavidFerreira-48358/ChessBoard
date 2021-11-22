@@ -30,6 +30,8 @@ class PlayCommand(
     private val dbMode: DbMode
 ):CommandInterface{
     override fun execute(parameter: String?): Any {
+        if (!board.hasJoined())return CommandResult(board)
+        if(board.actionState==Commands.WIN)return CommandResult(board)
         if(parameter == null){
             board.actionState = Commands.INVALID
             return CommandResult(board)
@@ -55,7 +57,11 @@ class MoveCommand(
 class RefreshCommand(
     private val board: Board
 ):CommandInterface{
-    override fun execute(parameter: String?) = CommandResult(board.refresh())
+    override fun execute(parameter: String?): CommandResult<Board> {
+        if (!board.hasJoined())return CommandResult(board)
+        return if(board.actionState==Commands.WIN) CommandResult(board)
+        else CommandResult(board.refresh())
+    }
 }
 
 class ExitCommand:CommandInterface{

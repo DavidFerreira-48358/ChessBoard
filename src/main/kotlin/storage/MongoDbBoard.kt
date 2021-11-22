@@ -129,16 +129,19 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
      * Function that adds move to the global list of moves
      * @param move, the move to be added
      */
-    private fun addToGameString(move:Move){
-        turn= turn.next()
+    private fun addToGameString(move:Move,func: callFunc){
+        if(actionState != Commands.WIN) turn= turn.next()
         if(firstmove==true){
             currentGame_String += "${move.piece}${'a'.plus(move.from.x)}${8-move.from.y}${'a'.plus(move.to.x)}${8-move.to.y} "
             firstmove=false
             currentgame_state="currentgames"
-            db.post(currentgame_state,GameState(currentGameid,currentGame_String))
+            if(func==callFunc.PLAY){
+                db.post(currentgame_state,GameState(currentGameid,currentGame_String))
+            }
+
         }
         else {currentGame_String += "${move.piece}${'a'.plus(move.from.x)}${8-move.from.y}${'a'.plus(move.to.x)}${8-move.to.y} "
-            db.put(currentgame_state,GameState(currentGameid,currentGame_String))}
+            if(func==callFunc.PLAY){db.put(currentgame_state,GameState(currentGameid,currentGame_String))}}
     }
 
     /**
@@ -165,19 +168,18 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
         actionState = ret
         if(ret == Commands.INVALID) return this
         if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
-        if(func==callFunc.PLAY && turn!=myTeam) return this
         if(func==callFunc.REFRESH && turn==myTeam) return this
         if(this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'K' ||
             this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'k'){
-            addToGameString(move)
             actionState = Commands.WIN
+            addToGameString(move,func)
             return this
         }
 
         this.arrayOfArrays[move.from.x][move.from.y] = null
         this.arrayOfArrays[move.to.x][move.to.y] = toMove
         if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) actionState = Commands.PROMOTE//mudar
-        addToGameString(move)
+        addToGameString(move,func)
         return this
     }
 
@@ -188,25 +190,14 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
      * @return if the [Result] is valid or not
      */
     private fun checkConditionValidate(move: Move, toMove:Piece,func: callFunc): Commands {
-        if (func==callFunc.REFRESH) {
-            if (move.from == move.to)
-                return Commands.INVALID
-            if (turn== getPieceAt(move.from.x, move.from.y)!!.team)
-                return Commands.INVALID
-            if (getPieceAt(move.to.x, move.to.y)?.team == getPieceAt(move.from.x, move.from.y)!!.team)
-                return Commands.INVALID
-            if (pieceMoves(move.piece, toMove.team, move.from, move.to, this)[move.piece] == Commands.INVALID)
-                return Commands.INVALID
-        }
-        else{
-
+        if (func!=callFunc.REFRESH) {
             if (move.from == move.to)
                 return Commands.INVALID
             if (turn != getPieceAt(move.from.x, move.from.y)!!.team)
                 return Commands.INVALID
             if (getPieceAt(move.to.x, move.to.y)?.team == getPieceAt(move.from.x, move.from.y)!!.team)
                 return Commands.INVALID
-            if (pieceMoves(move.piece, toMove.team, move.from, move.to, this)[move.piece] == Commands.INVALID)
+            if (pieceMoves(move.piece, toMove.team, move.from, move.to, this)== Commands.INVALID)
                 return Commands.INVALID
 
         }
@@ -252,9 +243,6 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
         }
         return if(string[string.size-2] != a ){
             this.makeMove(b,callFunc.REFRESH)
-            if(actionState!=Commands.INVALID) {//ja se sabe a partida que é um move valido
-                currentGame_String += "$a "
-            }
             this
         }
         else {
@@ -262,6 +250,8 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
         }
 
     }
-
+    override fun hasJoined():Boolean{
+        return currentGameid.isNotEmpty()
+    }
     override fun moves() = currentGame_String
 }

@@ -1,4 +1,5 @@
 import com.mongodb.client.MongoClient
+import console.printWelcome
 import console.readCommand
 import domane.ExitCommand
 import mongoDB.createMongoClient
@@ -13,10 +14,10 @@ fun main() {
     val driver = selectPath(dbInfo)
 
     val dbOperations = DbOperations(driver.second.getDatabase(dbInfo.dbName))
-    //cria a instacia das oepraçoes q vamos usar
     try {
         val board = MongoDbBoard(dbOperations,driver.first)//a board
         val dispatcher = Handlers(board,driver.first)//constroi os commandos com a board
+        printWelcome()
         while(true){
             val (command, parameter) = readCommand() //le o comando
             val handler = dispatcher[command]   //vai ver o commando
