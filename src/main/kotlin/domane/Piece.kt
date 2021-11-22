@@ -24,22 +24,27 @@ data class Move(val piece:Char, val from:Pos, val to:Pos){
  */
 enum class Team {
     BLACK,
-    WHITE;
+    WHITE,
+    NOT_DEFINED;
     fun next(): Team {
         return if(this == WHITE) BLACK
         else WHITE
     }
 }
 
+/**
+ * Enum class that holds the values of the special moves
+ */
 enum class SpecialMoves {
     FIRST,
     EN_PASSANT,
     NORMAL
 }
+
 /**
  * data class that defines the type Piece
  * @param piece the char of the piece
  * @param team the team with the piece belongs
  * @param fristmove dictates if its the piece first move
  */
-data class Piece(val piece:Char, val team:Team, var fristmove:SpecialMoves = SpecialMoves.NORMAL)
+data class Piece(val piece:Char, val team:Team, var fristmove:Boolean = false)

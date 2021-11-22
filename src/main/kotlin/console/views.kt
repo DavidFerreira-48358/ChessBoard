@@ -4,18 +4,15 @@ import domane.Commands
 import domane.Team
 import storage.Board
 
-
-/*data class PairMove(val team:String,val move: String){
-    override fun toString(): String {
-        return "$team -> $move"
-    }
-}*/
-
 /**
  * A command view is merely a function that renders the command execution result.
  */
 typealias View = (input: Any?) -> Unit
 
+/**
+ * Function that prints the open command output
+ * @param input, the commands returned from the open command
+ */
 fun printOpen(input: Any?) {
     input as Commands
     val success = (input != Commands.INVALID)
@@ -25,6 +22,10 @@ fun printOpen(input: Any?) {
     )
 }
 
+/**
+ * Function that prints the jin command output
+ * @param input, the commands returned from the join command
+ */
 fun printJoin(input: Any?) {
     input as Commands
     val success = (input != Commands.INVALID)
@@ -34,6 +35,10 @@ fun printJoin(input: Any?) {
     )
 }
 
+/**
+ * Function that prints the play command output
+ * @param input, the board returned from the play command
+ */
 fun printPlay(input: Any?) {
     input as Board
     if(input.actionState != Commands.WIN){
@@ -42,7 +47,11 @@ fun printPlay(input: Any?) {
     }
     else printWin(input)
 }
-//se for succes ent é para fazer draw
+
+/**
+ * Function that prints the refresh command output
+ * @param input, the board returned from the refresh command
+ */
 fun printRefresh(input: Any?) {
     input as Board
     if(input.actionState != Commands.WIN){
@@ -51,7 +60,11 @@ fun printRefresh(input: Any?) {
     }
     else println("${input.turn} wins the Game!")
 }
-//faz print da string
+
+/**
+ * Function that prints the moves command output
+ * @param input, the string returned from the moves command
+ */
  fun printMoves(input: Any?) {
      if(input as String != null){
          println("Moves:")
@@ -66,6 +79,10 @@ fun printRefresh(input: Any?) {
      }
 }
 
+/**
+ * Function that prints the help command output
+ * @param input, the input returned from the help command
+ */
 fun printHelp(input: Any?) {
     println("Commands list:\n" +
             "open <game number> -> this command allows you start a new game\n" +
@@ -79,6 +96,10 @@ fun printHelp(input: Any?) {
     )
 }
 
+/**
+ * Function that draws the board
+ * @param input, the board
+ */
 fun drawBoard(input: Any?) {
     if(input as Board != null) {
         println("    a b c d e f g h")
@@ -101,10 +122,17 @@ fun drawBoard(input: Any?) {
     }
 }
 
+/**
+ * Function that draws the welcome screen
+ */
 fun printWelcome() {
     printHelp("a")
 }
 
+/**
+ * Function that win
+ * @param input, the board.turn for the wining team
+ */
 fun printWin(input: Board){
     println("${input.turn} wins the Game!")
 }

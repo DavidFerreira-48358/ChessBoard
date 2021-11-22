@@ -1,16 +1,6 @@
 package console
 
-/*/**
- * Reads from the console the local user information.
- */
-fun readLocalUserInfo(): User {
-    while (true) {
-        print("Please enter your id: ")
-        val user = readln().trim().toUserID()
-        if (user == null) println("Error: user ids cannot contain whitespace characters")
-        else return user
-    }
-}*/
+
 
 /**
  * Reads a line from the console and parses it to obtain the corresponding command.

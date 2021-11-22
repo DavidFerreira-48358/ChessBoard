@@ -3,7 +3,6 @@ package domane
 import storage.Board
 
 val piecesSet:HashSet<Char> = hashSetOf('P','R','N','Q','K','B')
-val piecesSetString:HashSet<String> = hashSetOf("P","R","N","Q","K","B")
 val columns:Array<Char> = arrayOf('a','b','c','d','e','f','g','h')
 
 
@@ -60,7 +59,6 @@ private fun isValid(piece: Char, columnPos: Int, linePos: Int, board: Board): Bo
     return (columnPos in 0..7 && linePos in 0..7 &&
             board.getPieceAt(columnPos, linePos) != null
             && piecesSet.contains(piece.toUpperCase())
-            //&& board.getPieceAt(columnPos,linePos)!!.team == turn
             && (board.getPieceAt(columnPos, linePos)!!.piece == piece ||
             board.getPieceAt(columnPos, linePos)!!.piece.toUpperCase() == piece))
 }

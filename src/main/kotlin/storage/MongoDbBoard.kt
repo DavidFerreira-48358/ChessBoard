@@ -5,27 +5,12 @@ import domane.*
 import java.util.*
 
 /**
- * TODO(muudar para ficheiro res)
+ * enum class that holds the values of the called functions for future conditions
  */
-
-/**
- * Sum type used to represent the execution result of the existing commands
- */
-sealed class Result
-
-/**
- * Result produced when the command execution determines that the application should terminate.
- * See https://kotlinlang.org/docs/object-declarations.html#object-declarations-overview
- */
-object ExitResult : Result()
 enum class callFunc{
     REFRESH,
     PLAY
 }
-/**
- * Result produced when the command execution yields a value
- */
-class CommandResult<T>(val data: T) : Result()
 
 class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Board{
 
@@ -87,9 +72,6 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
      */
     var currentgame_state=""
 
-    /**
-     * Hold the current game state
-     */
     override var actionState = Commands.INVALID
 
 
@@ -133,7 +115,7 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
 
         }
         else {currentGame_String += "${move.piece}${'a'.plus(move.from.x)}${8-move.from.y}${'a'.plus(move.to.x)}${8-move.to.y} "
-            if(func==callFunc.PLAY){db.put(currentgame_state,GameState(currentGameid,currentGame_String))}}
+            db.put(currentgame_state,GameState(currentGameid,currentGame_String))}
     }
 
     /**
@@ -163,9 +145,13 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
         if(func==callFunc.REFRESH && turn==myTeam) return this
         if(this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'K' ||
             this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'k'){
-            actionState = Commands.WIN
-            addToGameString(move,func)
-            return this
+            try {
+                actionState = Commands.WIN
+                addToGameString(move,func)
+                return this//put
+            }catch (e:BoardAccessException){
+                throw BoardAccessException(e)
+            }
         }
 
         this.arrayOfArrays[move.from.x][move.from.y] = null
@@ -195,13 +181,14 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
                 return Commands.INVALID
             if (pieceMoves(move.piece, toMove.team, move.from, move.to, this)== Commands.INVALID)
                 return Commands.INVALID
+
         }
         return Commands.VALID
     }
 
     override fun getPieceAt(x: Int, y: Int): Piece? = this.arrayOfArrays[x][y]
 
-     override fun open(id:String?):Commands{
+    override fun open(id:String?):Commands{
          try {
              return if(id == null || db.read("open",id)!=null) return Commands.INVALID
              else {
@@ -215,6 +202,7 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
              throw  BoardAccessException(e)
          }
     }
+
     override fun join(id:String?):Commands{
         try{
             return if(id != null && db.read("open",id)!=null) {
@@ -228,6 +216,7 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
             throw BoardAccessException(e)
         }
     }
+
     override fun refresh():Board{
         if (dbInfo==DbMode.LOCAL) {
             this.actionState = Commands.INVALID
@@ -244,20 +233,13 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
             this.actionState = Commands.INVALID
             return this
         }
-        return if(string[string.size-2] != a ){
-            this.makeMove(b,callFunc.REFRESH)
-            if(actionState!=Commands.INVALID) {//ja se sabe a partida que é um move valido
-                currentGame_String += "$a "
-            }
-            this
-        }
-        else {
-            this
-        }
-
+        this.makeMove(b,callFunc.REFRESH)
+        return this
     }
+
     override fun hasJoined():Boolean{
         return currentGameid.isNotEmpty()
     }
+
     override fun moves() = currentGame_String
 }

@@ -1,8 +1,6 @@
 package domane
 
-/**
- * TODO(muudar para ficheiro res)
- */
+
 enum class Commands {
     VALID,
     INVALID,

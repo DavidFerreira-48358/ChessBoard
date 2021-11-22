@@ -5,17 +5,19 @@ import storage.DbMode
 import storage.DbOperations
 
 /**
- * todo
+ * Data class that links the commands to its representation
+ * @param action, the command action
+ * @param display, the command representation
  */
 data class CommandHandler(
     val action: CommandInterface,
     val display: View
 )
-//REVER COMENTARIO
+
 /**
  * Gets the container bearing the associations between user entered strings and the corresponding command handlers.
- * @param billboard the [Billboard] to be used by all commands
- * @param author    the [Author] instance to be used when posting messages
+ * @param board, the board to be used the commands
+ * @param db, the mode in which the client is running on
  * @return the container with the command handler mappings
  */
 fun Handlers(board: Board,db:DbMode): Map<String, CommandHandler> {

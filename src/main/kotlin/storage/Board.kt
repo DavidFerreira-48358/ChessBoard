@@ -25,16 +25,45 @@ interface Board {
      */
     fun getPieceAt(x:Int,y:Int): Piece?
 
+    /**
+     * Function that opens a game in the db
+     * @param id, the id of the string
+     */
     fun open(id:String?): Commands
 
+    /**
+     * Function that joins a game in the db
+     * @param id, the id of the string
+     */
     fun join(id:String?):Commands
 
+    /**
+     * Function searches for the opponents in the  db
+     */
     fun refresh():Board
 
+    /**
+     * Function returns the list of moves made until now
+     */
     fun moves():String
 
+    /**
+     * Function that returns true if the users as joined the game
+     */
     fun hasJoined():Boolean
+
+    /**
+     * Hold the current game state
+     */
     var actionState:Commands
+
+    /**
+     * holds the current player turn
+     */
     var myTeam: Team;
+
+    /**
+     * Team associated to opening or joining game
+     */
     var turn:Team ;
 }

@@ -15,16 +15,19 @@ interface CommandInterface{
     operator fun invoke(parameter: String? = null) = execute(parameter)
 
 }
+
 class OpenCommand(
     private val board: Board
 ):CommandInterface{
     override fun execute(parameter: String?) = CommandResult(board.open(parameter))
 }
+
 class JoinCommand(
     private val board: Board
 ):CommandInterface{
     override fun execute(parameter: String?) = CommandResult(board.join(parameter))
 }
+
 class PlayCommand(
     private val board: Board,
     private val dbMode: DbMode
@@ -48,6 +51,7 @@ class PlayCommand(
         else CommandResult(board.makeMove(sanitized,callFunc.PLAY))
     }
 }
+
 class MoveCommand(
     private val board: Board
 ):CommandInterface{
