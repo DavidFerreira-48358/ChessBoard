@@ -107,8 +107,11 @@ class BoardForTests{
             if(ret == Commands.INVALID) return this
 
             clearEnPassantList()
-            //if(toMove.fristmove == SpecialMoves.EN_PASSANT && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove= SpecialMoves.NORMAL
-            if(toMove.fristmove == SpecialMoves.FIRST && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove= SpecialMoves.EN_PASSANT
+            if(toMove.fristmove == SpecialMoves.EN_PASSANT && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove= SpecialMoves.NORMAL
+            if(toMove.fristmove == SpecialMoves.FIRST && (toMove.piece=='P' || toMove.piece=='p')){
+                toMove.fristmove= SpecialMoves.EN_PASSANT
+                enPassantList[passantListIndex] = s
+            }
 
             if(ret == Commands.EN_PASSANT){
                 enPassant(s,toMove)
@@ -145,7 +148,6 @@ class BoardForTests{
             this.arrayOfArrays[s.from.x][s.from.y] = null
             this.arrayOfArrays[s.to.x][s.to.y] = toMove
         }
-        enPassantList[passantListIndex] = s
     }
     private fun checkConditionValidate(s: validateForTests.Move, toMove: Piece): Commands {
         if(s.from == s.to) return Commands.INVALID

@@ -57,14 +57,16 @@ return when(c){
  */
 private fun movePawnTo(team: Team, from: Pos, to: Pos, board: Board): Commands {
     val Michael_Jackson = when(team){
-        Team.BLACK -> if(board.getPieceAt(from.x,from.y)?.fristmove == true) +2 else +1
-        Team.WHITE -> if(board.getPieceAt(from.x,from.y)?.fristmove == true) -2 else -1
+        Team.BLACK -> if(board.getPieceAt(from.x,from.y)?.fristmove == SpecialMoves.FIRST) +2 else +1
+        Team.WHITE -> if(board.getPieceAt(from.x,from.y)?.fristmove == SpecialMoves.FIRST) -2 else -1
         else -> 0
     }
     return when(true){
         to == Pos(from.x, from.y + Michael_Jackson) && board.getPieceAt(to.x , to.y) == null -> Commands.VALID
 
         to == Pos(from.x, from.y + Michael_Jackson/2) && board.getPieceAt(to.x , to.y) == null -> Commands.VALID
+
+        enPassant(board, from) -> Commands.EN_PASSANT//testado nos testes mas n na coisa real
 
         to == Pos(from.x + 1, from.y + Michael_Jackson) &&
                 null != board.getPieceAt(to.x , to.y)?.piece -> Commands.VALID
@@ -74,6 +76,13 @@ private fun movePawnTo(team: Team, from: Pos, to: Pos, board: Board): Commands {
 
         else -> Commands.INVALID
     }
+}
+private fun enPassant(board: Board, from:Pos):Boolean{
+    val piece = if((from.x+1 in 0..7) && board.getPieceAt(from.x+1,from.y) != null) board.getPieceAt(from.x+1,from.y)
+    else if((from.x-1 in 0..7) && board.getPieceAt(from.x-1,from.y) != null) board.getPieceAt(from.x-1,from.y)
+    else null
+    if(piece == null) return false
+    return piece.fristmove == SpecialMoves.EN_PASSANT
 }
 
 /**

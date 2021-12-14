@@ -1,6 +1,7 @@
 import console.*
 import domane.*
 import storage.Board
+import storage.BoardErrorException
 import storage.DbMode
 import storage.DbOperations
 
@@ -11,7 +12,8 @@ import storage.DbOperations
  */
 data class CommandHandler(
     val action: CommandInterface,
-    val display: View
+    val display: View,
+    val errorDisplay: (BoardErrorException) -> Unit = { }
 )
 
 /**
@@ -22,12 +24,26 @@ data class CommandHandler(
  */
 fun Handlers(board: Board,db:DbMode): Map<String, CommandHandler> {
     return mapOf(
-        "OPEN"  to CommandHandler(OpenCommand(board), ::printOpen),
-        "JOIN"   to CommandHandler(JoinCommand(board), ::printJoin),
-        "PLAY"   to CommandHandler(PlayCommand(board,db), ::printPlay),
-        "REFRESH"   to CommandHandler(RefreshCommand(board), ::printRefresh),
-        "MOVES"   to CommandHandler(MoveCommand(board), ::printMoves),
-        "EXIT"  to CommandHandler(ExitCommand(), { }),
-        "?"   to CommandHandler(HelpCommand(), ::printHelp)
+        "OPEN"  to CommandHandler(
+            action = OpenCommand(board),
+            display = ::printOpen),
+        "JOIN"   to CommandHandler(
+            action = JoinCommand(board),
+            display = ::printJoin),
+        "PLAY"   to CommandHandler(
+            action = PlayCommand(board,db),
+            display = ::printPlay),
+        "REFRESH"   to CommandHandler(
+            action = RefreshCommand(board),
+            display = ::printRefresh),
+        "MOVES"   to CommandHandler(
+            action = MoveCommand(board),
+            display = ::printMoves),
+        "EXIT"  to CommandHandler(
+            action = ExitCommand(),
+            display = { }),
+        "?"   to CommandHandler(
+            action = HelpCommand(),
+            display = ::printHelp)
     )
 }

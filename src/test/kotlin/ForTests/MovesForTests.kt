@@ -34,6 +34,7 @@ private fun movePawnToT(team: Team, from: validateForTests.Pos, to: validateForT
     val vector = when(team){
         Team.BLACK -> if(board.getPieceAt(from.x,from.y)?.fristmove == SpecialMoves.FIRST) +2 else +1
         Team.WHITE -> if(board.getPieceAt(from.x,from.y)?.fristmove == SpecialMoves.FIRST) -2 else -1
+        else -> 0
     }
     return when(true){
         to == validateForTests.Pos(from.x, from.y + vector) && board.getPieceAt(to.x , to.y) == null -> Commands.VALID
@@ -43,11 +44,11 @@ private fun movePawnToT(team: Team, from: validateForTests.Pos, to: validateForT
         enPassant(board, from) -> Commands.EN_PASSANT
 
         to == validateForTests.Pos(from.x + 1, from.y + vector) &&
-                board.getPieceAt(from.x + 1 , from.y + vector)?.piece !=
+                board.getPieceAt(from.x + 1 , from.y + vector)?.piece != null && board.getPieceAt(from.x + 1 , from.y + vector)?.piece !=
                 board.getPieceAt(from.x , from.y )?.piece -> Commands.VALID
 
         to == validateForTests.Pos(from.x - 1, from.y + vector) &&
-                board.getPieceAt(from.x - 1 , from.y + vector)?.piece !=
+                board.getPieceAt(from.x - 1 , from.y + vector)?.piece != null && board.getPieceAt(from.x - 1 , from.y + vector)?.piece !=
                 board.getPieceAt(from.x , from.y )?.piece -> Commands.VALID
         else -> Commands.INVALID
     }

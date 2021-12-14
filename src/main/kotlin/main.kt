@@ -16,28 +16,29 @@ fun main() {
 
     val dbOperations = DbOperations(driver.second.getDatabase(dbInfo.dbName))
     try {
-        val board = MongoDbBoard(dbOperations,driver.first)//a board
-        val dispatcher = Handlers(board,driver.first)//constroi os commandos com a board
+        val board = MongoDbBoard(dbOperations,driver.first)
+        val dispatcher = Handlers(board,driver.first)
         printWelcome()
         while(true){
-            val (command, parameter) = readCommand() //le o comando
-            val handler = dispatcher[command]   //vai ver o commando
-            if (handler == null) println("Invalid command")
-            else {
-                when (val result = handler.action(parameter)) { //vai fazer a action
-                    is ExitResult -> break //sai
-                    is CommandResult<*> -> handler.display(result.data) //faz display do resultado
+            try {
+                val (command, parameter) = readCommand()
+                val handler = dispatcher[command]
+                if (handler == null) println("Invalid command")
+                else {
+                    when (val result = handler.action(parameter)) {
+                        is ExitResult -> break
+                        is CommandResult<*> -> handler.display(result.data)
+                    }
                 }
+            }catch (e:BoardErrorException){
+                println("An unknown error occurred.\n" + "${e.cause}")
             }
         }
     }
-    catch(e:BoardAccessException){//erros da database
+    catch(e:BoardAccessException){
         println("Error with DataBase services." +
                 if (dbInfo.mode == DbMode.REMOTE) "Check your network connection."
                 else "Is your local database started?")
-    }
-    catch (e:BoardErrorException){//errors do software
-        println("An unknown error occurred.\n" + "${e.cause}")
     }
     finally {
         println("\uD83D\uDE2D \uD83D\uDE0E \uD83E\uDD2B \uD83D\uDE41 \uD83E\uDD0F \uD83D\uDC3B ")

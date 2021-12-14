@@ -1,6 +1,7 @@
 package storage
 
 
+import com.mongodb.MongoException
 import domane.*
 import java.util.*
 
@@ -11,6 +12,11 @@ enum class callFunc{
     REFRESH,
     PLAY
 }
+
+fun <T> tryCommand(block: () -> T) =
+    try { block() }
+    catch (ex: MongoException) { throw BoardErrorException(ex) }
+
 
 class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Board{
 
@@ -73,7 +79,8 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
     var currentgame_state=""
 
     override var actionState = Commands.INVALID
-
+    private var enPassantList = linkedMapOf<Int,Move>()
+    private var passantListIndex = 0
 
     /**
      * Function that initializes the Board
@@ -90,11 +97,11 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
             val curr = arrayOfArrays[i]
             for(j in blackStartInterval){
                 if(j == 0) curr[j] = Piece(pieceChar[i],Team.BLACK)
-                else curr[j] = Piece('p', Team.BLACK, true)
+                else curr[j] = Piece('p', Team.BLACK, SpecialMoves.FIRST)
             }
             for(j in whiteStartInterval){
                 if(j == 7) curr[j] = Piece(pieceChar[i].toUpperCase(),Team.WHITE)
-                else curr[j] = Piece('P',Team.WHITE, true)
+                else curr[j] = Piece('P',Team.WHITE, SpecialMoves.FIRST)
             }
         }
     }
@@ -141,14 +148,26 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
         val ret = checkConditionValidate(move,toMove,func)
         actionState = ret
         if(ret == Commands.INVALID) return this
-        if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
+
+        clearEnPassantList()
+        if((toMove.fristmove == SpecialMoves.FIRST) && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove = SpecialMoves.EN_PASSANT
+        if(toMove.fristmove == SpecialMoves.FIRST && (toMove.piece=='P' || toMove.piece=='p')){
+            toMove.fristmove= SpecialMoves.EN_PASSANT
+            enPassantList[passantListIndex] = move
+        }
+
+        if(ret == Commands.EN_PASSANT){
+            enPassant(move,toMove)
+            return this
+        }
+
         if(func==callFunc.REFRESH && turn==myTeam) return this
         if(this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'K' ||
             this.arrayOfArrays[move.to.x][move.to.y]?.piece == 'k'){
             try {
                 actionState = Commands.WIN
                 addToGameString(move,func)
-                return this//put
+                return this
             }catch (e:BoardAccessException){
                 throw BoardAccessException(e)
             }
@@ -163,6 +182,26 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
             throw BoardAccessException(e)
         }
         return this
+    }
+    private fun clearEnPassantList(){
+        if(enPassantList.isNotEmpty()){
+            enPassantList.forEach {
+                this.arrayOfArrays[it.value.to.x][it.value.to.y]!!.fristmove = SpecialMoves.NORMAL
+            }
+            enPassantList = linkedMapOf()
+        }
+    }
+    private fun enPassant(s:Move,toMove: Piece){
+        if(getPieceAt(s.from.x+1,s.from.y) != null){
+            this.arrayOfArrays[s.from.x+1][s.from.y] = null
+            this.arrayOfArrays[s.from.x][s.from.y] = null
+            this.arrayOfArrays[s.to.x][s.to.y] = toMove
+        }
+        else{
+            this.arrayOfArrays[s.from.x-1][s.from.y] = null
+            this.arrayOfArrays[s.from.x][s.from.y] = null
+            this.arrayOfArrays[s.to.x][s.to.y] = toMove
+        }
     }
 
     /**
@@ -186,11 +225,12 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
         return Commands.VALID
     }
 
-    override fun getPieceAt(x: Int, y: Int): Piece? = this.arrayOfArrays[x][y]
+    override fun getPieceAt(x: Int, y: Int): Piece? =
+        tryCommand {  this.arrayOfArrays[x][y] }
 
     override fun open(id:String?):Commands{
-         try {
-             return if(id == null || db.read("open",id)!=null) return Commands.INVALID
+         return tryCommand{
+             return@tryCommand if(id == null || db.read("open",id)!=null) Commands.INVALID
              else {
                  db.post("open", GameState(id,""))
                  currentGameid = id
@@ -198,43 +238,41 @@ class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Boar
                  currentgame_state = "open"
                  Commands.VALID
              }
-         }catch (e:BoardAccessException){
-             throw  BoardAccessException(e)
          }
     }
 
     override fun join(id:String?):Commands{
-        try{
-            return if(id != null && db.read("open",id)!=null) {
+        return tryCommand{
+            return@tryCommand if(id != null && db.read("open",id)!=null) {
                 currentGameid = id
                 myTeam=if(dbInfo==DbMode.LOCAL)Team.WHITE else Team.BLACK
                 currentgame_state = "currentgames"
                 Commands.VALID
             }
             else Commands.INVALID
-        }catch (e:BoardAccessException){
-            throw BoardAccessException(e)
         }
     }
 
     override fun refresh():Board{
-        if (dbInfo==DbMode.LOCAL) {
-            this.actionState = Commands.INVALID
-            return this
+        return tryCommand {
+            if (dbInfo==DbMode.LOCAL) {
+                this.actionState = Commands.INVALID
+                return@tryCommand this
+            }
+            if (currentGameid.isEmpty()){
+                this.actionState = Commands.INVALID
+                return@tryCommand this
+            }
+            val a = db.read(currentgame_state,currentGameid)!!.movement
+            val string = a.split(" ")
+            val b = sanitiseString(string[string.size-2],this)
+            if(b == null){
+                this.actionState = Commands.INVALID
+                return@tryCommand this
+            }
+            this.makeMove(b,callFunc.REFRESH)
+            return@tryCommand this
         }
-        if (currentGameid.isEmpty()){
-            this.actionState = Commands.INVALID
-            return this
-        }
-        val a = db.read(currentgame_state,currentGameid)!!.movement
-        val string = a.split(" ")
-        val b = sanitiseString(string[string.size-2],this)
-        if(b == null){
-            this.actionState = Commands.INVALID
-            return this
-        }
-        this.makeMove(b,callFunc.REFRESH)
-        return this
     }
 
     override fun hasJoined():Boolean{

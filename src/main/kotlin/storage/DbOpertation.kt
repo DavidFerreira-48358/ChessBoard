@@ -1,5 +1,6 @@
 package storage
 
+import com.mongodb.MongoException
 import com.mongodb.client.MongoDatabase
 import mongoDB.*
 
@@ -10,6 +11,11 @@ import mongoDB.*
  */
 data class GameState(val _id:String,val movement:String)
 
+fun <T> tryDbAccess(block: () -> T) =
+    try { block() }
+    catch (ex: MongoException) { throw BoardAccessException(ex) }
+
+
 class DbOperations(private val db:MongoDatabase) {
 
     /**
@@ -18,7 +24,7 @@ class DbOperations(private val db:MongoDatabase) {
      * @param move, the game state
      */
     fun post(collectionId:String, move:GameState){
-        db.createDocument(collectionId,move)
+        tryDbAccess {  db.createDocument(collectionId,move) }
     }
 
     /**
@@ -28,7 +34,7 @@ class DbOperations(private val db:MongoDatabase) {
      * @return a [GameState] with the game id and the movement
      */
     fun read(id:String,gameid:String):GameState?{
-        return db.getCollectionWithId<GameState>(id).getDocument(gameid)
+        return tryDbAccess {  db.getCollectionWithId<GameState>(id).getDocument(gameid) }
     }
 
     /**
@@ -37,6 +43,6 @@ class DbOperations(private val db:MongoDatabase) {
      * @param move, the the move to replace the file
      */
     fun put(id:String,move:GameState){
-        db.getCollectionWithId<GameState>(id).updateDocument(move)
+        tryDbAccess {  db.getCollectionWithId<GameState>(id).updateDocument(move) }
     }
 }

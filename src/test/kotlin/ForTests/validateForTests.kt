@@ -35,8 +35,8 @@ class validateForTests(private val string:String?, private val board: BoardForTe
         return when(s.lastIndex){
             6 ->{//commando completo
                 if((s[1][0] !in piecesSet)
-                    ||s[3] !in "0".."7"
-                    ||s[5] !in "0".."7"
+                    ||8-s[3].toInt() !in 0..7
+                    ||8-s[5].toInt() !in 0..7
                     ||isValid(s[1][0].toUpperCase(),s[2][0]-'a',8-s[3].toInt(),s[4][0]-'a',8-s[5].toInt()) == Commands.INVALID) null
                 else Move(
                     piece = s[1][0].toUpperCase(),
@@ -44,8 +44,8 @@ class validateForTests(private val string:String?, private val board: BoardForTe
                     to = Pos(s[4][0]-'a',8-s[5].toInt())
                 )}
             5 ->{//commando onde peça é omitida
-                if(s[3] !in "0".."7"
-                    ||s[5] !in "0".."7"
+                if(8-s[2].toInt() !in 0..7
+                    ||8-s[4].toInt() !in 0..7
                     ||isValid('P',s[1][0]-'a',8-s[2].toInt(),s[3][0]-'a',8-s[4].toInt()) == Commands.INVALID) null
                 else Move(
                     piece = 'P',

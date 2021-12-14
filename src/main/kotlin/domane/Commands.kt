@@ -15,7 +15,6 @@ interface CommandInterface{
     operator fun invoke(parameter: String? = null) = execute(parameter)
 
 }
-
 class OpenCommand(
     private val board: Board
 ):CommandInterface{

@@ -47,4 +47,4 @@ enum class SpecialMoves {
  * @param team the team with the piece belongs
  * @param fristmove dictates if its the piece first move
  */
-data class Piece(val piece:Char, val team:Team, var fristmove:Boolean = false)
+data class Piece(val piece:Char, val team:Team, var fristmove:SpecialMoves = SpecialMoves.NORMAL)
